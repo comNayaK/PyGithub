@@ -1,5 +1,6 @@
 ############################ Copyrights and license ############################
 #                                                                              #
+# Copyright 2026 Enrico Minack <github@enrico.minack.dev>                      #
 # Copyright 2026 Matt Davis <35502728+matt-davis27@users.noreply.github.com>   #
 #                                                                              #
 # This file is part of PyGithub.                                               #
@@ -26,11 +27,13 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
 import github.NamedUser
+import github.Organization
 import github.SecretScanAlertInstance
 from github.GithubObject import Attribute, NonCompletableGithubObject, NotSet
 
 if TYPE_CHECKING:
     from github.NamedUser import NamedUser
+    from github.Organization import Organization
     from github.SecretScanAlertInstance import SecretScanAlertInstance
 
 
@@ -48,6 +51,7 @@ class SecretScanAlert(NonCompletableGithubObject):
     """
 
     def _initAttributes(self) -> None:
+        self._assigned_to: Attribute[NamedUser | Organization] = NotSet
         self._created_at: Attribute[datetime] = NotSet
         self._first_location_detected: Attribute[SecretScanAlertInstance] = NotSet
         self._has_more_locations: Attribute[bool] = NotSet
@@ -78,6 +82,10 @@ class SecretScanAlert(NonCompletableGithubObject):
 
     def __repr__(self) -> str:
         return self.get__repr__({"number": self.number})
+
+    @property
+    def assigned_to(self) -> NamedUser | Organization:
+        return self._assigned_to.value
 
     @property
     def created_at(self) -> datetime:
@@ -188,6 +196,14 @@ class SecretScanAlert(NonCompletableGithubObject):
         return self._validity.value
 
     def _useAttributes(self, attributes: dict[str, Any]) -> None:
+        if "assigned_to" in attributes:  # pragma no branch
+            self._assigned_to = self._makeUnionClassAttributeFromTypeKey(
+                "type",
+                "unknown",
+                attributes["assigned_to"],
+                (github.NamedUser.NamedUser, "NamedUser"),
+                (github.Organization.Organization, "Organization"),
+            )
         if "created_at" in attributes:
             self._created_at = self._makeDatetimeAttribute(attributes["created_at"])
         if "first_location_detected" in attributes:
