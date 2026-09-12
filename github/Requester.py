@@ -674,7 +674,7 @@ class Requester:
         parameters: dict[str, Any] | None = None,
         headers: dict[str, str] | None = None,
         input: Any | None = None,
-        valid_codes: set[int] = frozenset({200}),
+        valid_codes: frozenset[int] = frozenset({200}),
         follow_302_redirect: bool = False,
     ) -> tuple[int, dict[str, Any], Any]:
         """
@@ -694,6 +694,7 @@ class Requester:
         :param valid_codes: status codes that should be treated as valid, non-error responses
         :return: ``(status: int, headers: dict, JSON Response: Any)``
         :raises: :class:`GithubException` for any status code not in ``valid_codes``
+
         """
         status, responseHeaders, output = self.requestJson(
             verb,
